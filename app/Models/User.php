@@ -62,7 +62,8 @@ class User extends Authenticatable implements JWTSubject
         'remember_me',
         'subscribe_me',
         'send_recommened_poem',
-        'send_notification'
+        'send_notification',
+        'send_me_poems'
     ];
 
 
@@ -84,4 +85,9 @@ class User extends Authenticatable implements JWTSubject
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+    
+    public function countries(){
+        return $this->belongsTo('App\Models\Country','ucountry_id','id');
+    }
+    
 }

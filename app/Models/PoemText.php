@@ -18,4 +18,11 @@ class PoemText extends Model
         'icontent_url',
         'itext'
     ];
+    
+    // protected $appends = ['shortDescription'];
+
+    // public function getShortDescriptionAttribute(){
+    //     return substr($this->attributes['itext'], 0, 100).'....';
+    // }
+    
 }

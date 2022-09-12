@@ -21,6 +21,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::get('/getRegistration', [ApiController::class,'getRegistration']);
+Route::any('/user-email-verification/{token}', [ApiController::class,'userEmailVerification']);
 
 Route::post('/user-registration', [ApiController::class,'userRegistration']);
 Route::post('/user-login', [ApiController::class,'userLogin']);
@@ -31,7 +32,6 @@ Route::post('/faq-list', [ApiController::class,'getFaqList']);
 Route::post('/term-condition', [ApiController::class,'getTermCondtion']);
 Route::post('/privacy-policy', [ApiController::class,'getPrivacyPolicy']);
 Route::post('/get-about-us', [ApiController::class,'getAboutUsData']);
-
 
 Route::post('/get-session', [ApiController::class,'getSessionData']);
 
@@ -50,8 +50,20 @@ Route::post('/get-all-creator', [ApiController::class,'getAllCreatorList']);
 
 Route::post('/poem/{poemId}', [ApiController::class,'getPoemDetail']);
 Route::post('/deletePoem/{poemId}', [ApiController::class,'deletePoem']);
+Route::post('/removePoem/{poemId}', [ApiController::class,'removePoem']);
+
 
 Route::post('/add-poem', [ApiController::class,'addPoem']);
+
+Route::post('/send-me-poem-email', [ApiController::class,'sendMePoemEmail']);
+
+
+Route::post('/recommend-poem', [ApiController::class,'recommendPoem']);
+Route::post('/add-to-collection', [ApiController::class,'addToCollection']);
+Route::post('/remove-from-collection', [ApiController::class,'removeFromCollection']);
+
+Route::post('/send-me-a-poem', [ApiController::class,'sendMePoem']);
+
 
 
 

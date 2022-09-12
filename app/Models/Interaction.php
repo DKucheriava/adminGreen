@@ -34,7 +34,8 @@ class Interaction extends Model
         'last_view_end',
         'last_view_duration',
         'collection',
-        'register'
+        'register',
+        'is_admin'
     ];
 
 }

@@ -11,11 +11,10 @@ class Item extends Model
     protected $table = 'items';
     protected $fillable = [
         'creatorid',
+        'userid',
         'cname',
         'ititle',
         'iyear',
-        // 'itheme_ids',
-        // 'imood_ids',
         'itheme1',
         'itheme2',
         'itheme3',
@@ -26,12 +25,34 @@ class Item extends Model
         'imood3',
         'icontent_url',
         'curl',
+        'item_text1',
+        'item_text2',
+        'item_text3',
+        'iadd_url_1',
+        'iadd_url_2',
+        'iadd_url_3',
         'inum_words',
         'inum_words_bin',
         'inum_lines',
         'inum_words_per_line',
-        'inum_words_per_line_bin'
+        'inum_words_per_line_bin',
+        'approved_by_admin',
+        'is_admin'
     ];
+
+     public function itemAddedByUser(){
+        return $this->hasOne('App\Models\User','userid','userid');
+    }
+
+    public function itemDetail(){
+        return $this->hasOne('App\Models\PoemText','itemid','itemid');
+    }
+
+    public function poemFullDetail(){
+        return $this->belongsTo('App\Models\PoemText','itemid','itemid');
+    }
+
+
 }
 
 
