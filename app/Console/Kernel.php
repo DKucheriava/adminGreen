@@ -16,6 +16,7 @@ class Kernel extends ConsoleKernel
         Commands\CronRecommendForDay::class,
         Commands\CronRecommendForWeek::class,
         Commands\CronRecommendForMonth::class,
+        Commands\LoadPythonFunctions::class
     ];
 
     /**
@@ -26,10 +27,11 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('cron:recommend:for:day')->everyMinute();   
+        // $schedule->command('cron:recommend:for:day')->everyMinute();
         $schedule->command('cron:recommend:for:day')->daily();
-        $schedule->command('cron:recommend:for:week')->weekly();         
-        $schedule->command('cron:recommend:for:month')->monthly();   
+        $schedule->command('cron:recommend:for:week')->weekly();
+        $schedule->command('cron:recommend:for:month')->monthly();
+        $schedule->command('python:load-functions')->hourly();
     }
 
     /**

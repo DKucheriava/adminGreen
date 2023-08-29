@@ -1016,7 +1016,7 @@ class ApiController extends Controller
     function recommendPoem(Request $request){
         $selected_term  =   $request->poemType;
         $flag = $request->flag;
-dd($request);
+
         if($request->userid && $request->userid!=0){
             $getpoem = Item::with('poemFullDetail')
                         ->where(function ($query) use($selected_term,$flag ) {
