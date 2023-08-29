@@ -16,6 +16,7 @@ class PoemText extends Model
         'cname',
         'iyear',
         'icontent_url',
+        'ctext',
         'itext'
     ];
     

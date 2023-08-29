@@ -1,26 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-        <meta charset="utf-8" />
-        <title>Log In </title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        
-        <link href="{{ url('admin/css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" id="bs-default-stylesheet" />
-        <link href="{{ url('admin/css/app.min.css') }}" rel="stylesheet" type="text/css" id="app-default-stylesheet" />
-        <link href="{{ url('admin/css/bootstrap-dark.min.css') }}" rel="stylesheet" type="text/css" id="bs-dark-stylesheet" />
-        <link href="{{ url('admin/css/app-dark.min.css') }}" rel="stylesheet" type="text/css" id="app-dark-stylesheet" />
-        <link href="{{ url('admin/css/icons.min.css') }}" rel="stylesheet" type="text/css" />
+    <head>
+            <meta charset="utf-8" />
+            <title>Change Password </title>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <link rel="shortcut icon" src="{{asset('admin/images/logo-sm.png')}}">
+            
+            <link href="{{ url('admin/css/bootstrap.min.css') }}" rel="stylesheet" type="text/css" id="bs-default-stylesheet" />
+            <link href="{{ url('admin/css/app.min.css') }}" rel="stylesheet" type="text/css" id="app-default-stylesheet" />
+            <link href="{{ url('admin/css/bootstrap-dark.min.css') }}" rel="stylesheet" type="text/css" id="bs-dark-stylesheet" />
+            <link href="{{ url('admin/css/app-dark.min.css') }}" rel="stylesheet" type="text/css" id="app-dark-stylesheet" />
+            <link href="{{ url('admin/css/icons.min.css') }}" rel="stylesheet" type="text/css" />
 
-    <style type="text/css">
-        body{
-            background-color: rgb(71,161,69) !important;
-        } 
-        .error{
-            color: red;
-        }
-    </style>
+            <style type="text/css">
+                  body.authentication-bg{
+                    background: url(http://3.238.14.13/green_pheasant/admin/images/theme-bg.jpg);
+                    background-size: cover;
+                    background-position: 100% 50%;
+                }
+                .error{
+                    color: red;
+                }
+            </style>
 
-</head>
+    </head>
 
     <body class="loading authentication-bg authentication-bg-pattern">
            <div class="account-pages mt-5 mb-5">
@@ -44,7 +47,7 @@
                                             </span>
                                         </a>
                                     </div>
-                                    <p class="text-muted mb-4 mt-3">Enter your email address and password to access admin panel.</p>
+                                    <h3 class="text-muted mb-4 mt-3">Reset Password</h3>
                                 </div>
                                 
                                 <form action="{{url('change-password')}}" id="admin-forget-password" method="post">
@@ -61,7 +64,7 @@
                                             <label>Confirm Password</label>
                                             <input type="password" name="confirm_pw" class="form-control" value="" placeholder="Confirm Password">
                                         </div>
-                                        <button type="submit" class="btn btn-primary btn-block btn-lg btn-primary-theme">submit</button>
+                                        <button type="submit" class="btn btn-primary btn-block btn-lg btn-primary-theme">Submit</button>
                                     </div>
 
                                 </form>
@@ -103,11 +106,11 @@ $(document).ready(function(){
         rules:{
             new_pw:{
                 required: true,
-                minlength:8,
+                minlength:6,
             },
             confirm_pw:{
                 required  : true,
-                minlength :8,
+                minlength :6,
                 equalTo   : "#new_pw",
             },
         },

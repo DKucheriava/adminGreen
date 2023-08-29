@@ -87,7 +87,7 @@
                                         </div>
                                     </div>
 										<div class=" text-right">
-										    <button class="btn btn-success">Submit</button>
+										    <button class="btn btn-success btn-primary-theme">Submit</button>
                                             </div>
                                 </div>
                                       

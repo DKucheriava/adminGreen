@@ -23,7 +23,7 @@
         <link rel="stylesheet" href="https://cdn.datatables.net/1.12.1/css/jquery.dataTables.min.css">
         <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
 
-    
+   
     
         <style type="text/css">
             #side-menu a:hover{
@@ -54,9 +54,7 @@
         <script type="text/javascript" src="{{url('admin/js/jquery-3.2.1.min.js')}}"></script>
         <script src="https://ajax.aspnetcdn.com/ajax/jquery.validate/1.9/jquery.validate.js"></script>
         <script src="{{ url('admin/js/additional-methods.min.js')}}" type="text/javascript"></script>
-            
         <script src="{{ url('admin/libs/flatpickr/flatpickr.min.js') }}"></script>
-      
         <script src="{{ url('admin/libs/selectize/js/standalone/selectize.min.js') }}"></script>
         <script src="{{ url('admin/js/pages/dashboard-1.init.js') }}"></script>
         
@@ -83,7 +81,12 @@
 		<script src="{{ url('admin/js/app.min.js') }}"></script> 
         <script src="https://cdn.ckeditor.com/4.14.0/standard/ckeditor.js"></script>
         
+        <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+        
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
         <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+         <script src="//cdn.ckeditor.com/4.14.1/standard/ckeditor.js"></script>
         <script>
             feather.replace()
             @if(Session::has('success'))
@@ -131,6 +134,16 @@
                 });
             @endif  
         </script>
+		
+		<script>
+			$(document).ready(function(){
+					$('.customtopdropdownbtn').on('click', function (e) {     
+								e.preventDefault();
+								$(".customtopdropdownmenu").toggleClass("show");
+							});
+							
+			});
+		</script>
     </body>
 </html>
 

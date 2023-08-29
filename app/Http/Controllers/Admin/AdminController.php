@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Http\Requests, DB, Session, Response;
+use App\Http\Requests, DB, Response;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -11,13 +11,15 @@ use App\Models\ContactUs;
 use App\Models\Country;
 use App\Models\Admin;
 use App\Models\User;
-use App\Models\Poem;
+use App\Models\Item;
 use App\Traits\ImagesTrait;
 use DataTables;
 use Exception;
 use Config;
 use Crypt;
 use Auth;
+use Illuminate\Support\Facades\Session;
+
 
 class AdminController extends Controller
 {
@@ -30,19 +32,46 @@ class AdminController extends Controller
                     $admin = Admin::where('email',$request->email)->first();
                     if(isset($admin) && !empty($admin)){
                         $password = $admin->password;
+                        // dd($request->all());
+
+
                         if (Hash::check($request->password,$admin->password)) {
-                                if(Auth::guard('admin')->attempt(['email' => $request->email, 'password' => $request->password], $request->has('remember') ? true : false)){       
-                                    // Session::flash('success','Welcome '.$admin['name'].' to Green Pheasants');
-                                    Session::flash('success','Login successfully');
-                                    return redirect('admin/dashboard');
+                            if(Auth::guard('admin')->attempt(['email' => $request->email, 'password' => $request->password])){
+
+                                if($request->remember == '1'){
+                                    // dd('in');
+                                    // $request->session()->put('email', $request->email);
+                                    // $request->session()->put('password', $request->password);
+                                    // $request->session()->save();
+                                     // session()->get('email');
+                                     Session::put('greenadmin_email', $request->email);
+                                    Session::put('greenadmin_password', $request->password);
+                                    Session::put('email', $request->email);
+                                    Session::put('password', $request->password);
+                                }else{
+                                    // dd('out');
+                                    // $request->session()->flush();
+                                    Session::forget('greenadmin_email');
+                                    Session::forget('greenadmin_password');
+                                    $request->session()->forget('email');
+                                    $request->session()->forget('password');
                                 }
+
+                                // if(Auth::guard('admin')->attempt(['email' => $request->email, 'password' => $request->password], $request->has('remember') ? true : false)){
+                                // dd($request->has('remember') ? true : false);
+                                // Session::set('variableName', $value);
+
+
+                                Session::flash('success','Login successfully');
+                                return redirect('admin/dashboard');
+                            }
                         } else {
-                            Session::flash('error','wrong password');
-                            return redirect()->back();  
+                            Session::flash('error','Wrong password');
+                            return redirect()->back();
                         }
                     } else {
                         Session::flash('error','Email or Password is incorrect');
-                        return redirect()->back(); 
+                        return redirect()->back();
                     }
                 } else {
                     Session::flash('error',Config::get(ADMN_MSGS.'.session.login.error.required_fields'));
@@ -50,7 +79,7 @@ class AdminController extends Controller
                 }
             }
             return view('backend.login');
-        } else {
+        }else {
             return redirect('admin/dashboard');
         }
         return view('backend.login');
@@ -115,7 +144,7 @@ class AdminController extends Controller
                                     ]);
                         return redirect('/login')->with('success','Password changed successfully');
                     } else{
-                        return redirect()->back()->with('error',"Password and confirm password doesn't matched");   
+                        return redirect()->back()->with('error',"Password and confirm password doesn't matched");
                     }
                 } else{
                     return redirect()->back()->with('error','Please enter password to change');
@@ -133,18 +162,19 @@ class AdminController extends Controller
     public function dashboard(){
         if (Auth::guard('admin')->check()) {
         $userList = User::with('countries')
-                        ->select('user_name','uemail','uregistration_time','ucountry_id','created_at')
+                        ->select('userid','user_name','uemail','uregistration_time','ucountry_id','created_at')
                         ->get();
-                        
+
         $userCount = User::count();
-        $poemCount = Poem::count();
-                    
+        $poemCount = Item::count();
+        $sessiondata = Session::get('email');
+
         }else{
             Session::flash('error','Please login to access the page');
             return redirect('/');
         }
 
-        return view('backend.index',compact('userList','userCount','poemCount'));        
+        return view('backend.index',compact('userList','userCount','poemCount','sessiondata'));
     }
 
     public function admin_profile(Request $request){
@@ -155,7 +185,7 @@ class AdminController extends Controller
             // dd($input);
             if(isset($input['image'])){
                 $image1 = isset($input['image']) && !empty($input['image']) ? $input['image']:'';
-                if($request->file('image')){ 
+                if($request->file('image')){
                     $directory ='admin/images/profile';
                     $type = 'logo';
                     $imagedata1 = $this->uploadimage($directory,$type, $request->file('image'), '');
@@ -163,7 +193,7 @@ class AdminController extends Controller
                         $adminImage = $imagedata1['image'];
                     }
                 }
-                
+
                 if($admin['image'] && file_exists(public_path('admin/images/profile/'.$admin['image']))){
                     unlink(base_path('public/admin/images/profile/'.$admin['image']));
                 }
@@ -172,7 +202,7 @@ class AdminController extends Controller
                       ->update([
                         'image' => @$adminImage
                       ]);
-  
+
             }
 
             $profile =  Admin::where('id',Auth::guard('admin')->user()->id)
@@ -193,7 +223,7 @@ class AdminController extends Controller
         }
 
         $userList = Auth::guard('admin')->user();
-        $countries = Country::get(); 
+        $countries = Country::get();
         return view('backend.admin.profile',compact('userList','countries'));
     }
 
@@ -217,8 +247,8 @@ class AdminController extends Controller
 
     public function adminLogout(){
         // Auth::logout();
-        // Auth::guard('admin')->logout();
-        Session::flush();
+        Auth::guard('admin')->logout();
+        // Session::flush();
         return redirect('/login')->with('success','Logged out successfully');
     }
 

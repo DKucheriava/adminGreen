@@ -9,18 +9,21 @@
                         <span> Dashboard </span>
                     </a>
                 </li>
+
                 <li>
                     <a href="{{url('admin/user/list')}}">
                            <i data-feather="users"></i>
                         <span> Users </span> 
                     </a>
                 </li>
+
                 <li>
                     <a href="{{url('admin/poem/list')}}">
                            <i data-feather="list"></i>
-                        <span> Poems </span> 
+                        <span> Items </span> 
                     </a>
                 </li>
+
              <!--    <li> 
                     <a href="{{url('admin/job/list')}}">
                            <i data-feather="command"></i>
@@ -85,11 +88,18 @@
                     </a>
                 </li> -->
                 
-              
+                
+                <li> 
+                    <a href="{{url('admin/paymentTransaction/list')}}">
+                        <i data-feather="credit-card"></i>
+                        <span> Payment Transaction </span>
+                    </a>
+                </li>
+
                 <li> 
                     <a href="{{url('admin/faqs')}}">
                         <i data-feather="info"></i>
-                        <span> FAQ's </span>
+                        <span> FAQ </span>
                     </a>
                 </li>
                 

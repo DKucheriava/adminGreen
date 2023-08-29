@@ -15,10 +15,10 @@
                                         <li class="breadcrumb-item">
                                             <a href="{{url('admin/dashboard')}}">Dashboard</a>
                                         </li>
-                                        <li class="breadcrumb-item active">Edit terms & condtion</li>
+                                        <li class="breadcrumb-item active">Edit Terms & Condition</li>
                                     </ol>
                                 </div>
-                                <h4 class="page-title">Edit terms & condtion</h4>
+                                <h4 class="page-title">Edit Terms & Condition</h4>
                             </div>
                         </div>
                     </div>
@@ -32,14 +32,14 @@
                                             @csrf                                        
                                             <div class="col-lg-12">
                                                 <div class="form-group">
-                                                    <label>Title(English)</label>
+                                                    <label>Title</label>
                                                     <input class="form-control" id="title" name="title" type="text"  value="{{@$terms_condition->title}}">    
                                                 </div>
                                             </div>
 
                                             <div class="col-lg-12">
                                                 <div class="form-group">
-                                                    <label class="">Description(English)</label>
+                                                    <label class="">Description</label>
                                                     <textarea class="form-control textar" id="description_id" name="description_id">{{@$terms_condition->description}}</textarea>
                                                     <input class="form-control" id="description_hidden_id" name="description" type="hidden" value="{{@$terms_condition->description}}">
                                                     <label class="error" for="description_hidden_id"></label>

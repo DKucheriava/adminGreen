@@ -1,16 +1,17 @@
 <div class="navbar-custom">
     <div class="container-fluid">
         <ul class="list-unstyled topnav-menu float-right mb-0">
-            <li class="dropdown notification-list topbar-dropdown">
-                <a class="nav-link dropdown-toggle nav-user mr-0 waves-effect waves-light" data-toggle="dropdown" href="#" role="button" aria-haspopup="false" aria-expanded="false">
+			
+            <li class="dropdown notification-list topbar-dropdown customtopdropdown">
+                <a class="nav-link dropdown-toggle nav-user mr-0 waves-effect waves-light customtopdropdownbtn" data-toggle="dropdown" href="javascript:void();" role="button" aria-haspopup="false" aria-expanded="false">
                     <img src="{{Auth::guard('admin')->user()->image?asset('admin/images/profile/'.Auth::guard('admin')->user()->image):asset('admin/images/dummy.png')}}" alt="user-image" class="rounded-circle">
                     <span class="pro-user-name ml-1">
                         {{Auth::guard('admin')->user()->full_name}} <i class="mdi mdi-chevron-down"></i> 
                     </span>
                 </a>
                 
-				<div class="dropdown-menu dropdown-menu-right profile-dropdown ">
-                    <div class="dropdown-divider"></div>
+				<div class="dropdown-menu dropdown-menu-right profile-dropdown customtopdropdownmenu">
+                    
                     <a href="{{ url('admin/profile')}}" class="dropdown-item notify-item">
                         <i class="fe-user"></i>
                         <span>Profile</span>
@@ -36,7 +37,7 @@
                  
                 </span>
             </a--->
-            <a href="{{ url('admin/home') }}" class="logo logo-light text-center">
+            <a href="{{ url('admin/dashboard') }}" class="logo logo-light text-center">
                 <span class="logo-sm">
                     <img src="{{ url('admin/images/logo.png') }}" alt="" height="70">
                 </span> 
@@ -65,3 +66,15 @@
         <div class="clearfix"></div>
     </div>
 </div>
+
+
+<!---script>
+$(document).ready(function(){
+  $(".customtopdropdownbtn").click(function(){
+	  $(".customtopdropdownmenu").addClass("show");
+	});
+});
+</script--->
+
+
+

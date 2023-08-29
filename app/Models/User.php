@@ -6,12 +6,12 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
+// use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class User extends Authenticatable implements JWTSubject
 {
-    use HasApiTokens, HasFactory, Notifiable;
+    use HasFactory, Notifiable;
 
     /**
     * Get the identifier that will be stored in the subject claim of the JWT.
@@ -63,7 +63,9 @@ class User extends Authenticatable implements JWTSubject
         'subscribe_me',
         'send_recommened_poem',
         'send_notification',
-        'send_me_poems'
+        'send_me_poems',
+        'security_code',
+        'email_verification_status'
     ];
 
 

@@ -25,6 +25,7 @@ class Item extends Model
         'imood3',
         'icontent_url',
         'curl',
+        'ctext',
         'item_text1',
         'item_text2',
         'item_text3',
@@ -37,7 +38,8 @@ class Item extends Model
         'inum_words_per_line',
         'inum_words_per_line_bin',
         'approved_by_admin',
-        'is_admin'
+        'is_admin',
+        'notify_by'
     ];
 
      public function itemAddedByUser(){

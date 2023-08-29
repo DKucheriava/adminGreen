@@ -9,10 +9,10 @@
                                 <div class="page-title-right">
                                     <ol class="breadcrumb m-0">
                                          <li class="breadcrumb-item"><a href="{{url('admin/dashboard')}}">Dashbord</a></li>
-                                        <li class="breadcrumb-item active">Poems</li>
+                                        <li class="breadcrumb-item active">Items</li>
                                     </ol>
                                 </div>
-                                <h4 class="page-title">Poems</h4>
+                                <h4 class="page-title">Items</h4>
                             </div>
                         </div>
                     </div> 
@@ -22,57 +22,66 @@
                             <div class="card-box">
                                <div class="row">
                                     <div class="col-md-6">
-                                        <h4 class="header-title mb-3">All Poems</h4>
+                                        <h4 class="header-title mb-3">All Items</h4>
                                     </div>
                                      <div class="col-md-6 text-right">
-                                        <a href="{{url('admin/poem/add')}}" class="btn btn-primary  mb-3">Add Poem</a>
+                                        <a href="{{url('admin/poem/add')}}" class="btn btn-primary  mb-3">Add Item</a>
                                     </div>
                                 </div>
                                 <div class="table-responsive">
                                     <table   id="example"  class="table  table-hover table-nowrap table-centered m-0">
                                         <thead class="thead-light">
                                             <tr>
-                                                <th>Poem Title</th>
-                                                <th>Poem Added by</th>
+                                                 <th>Sr. No</th>
+                                                <th style="display:none;">Id</th>
+                                                <th>Item Title</th>
+                                                <th>Item Added by</th>
                                                 <th>Year</th>
-                                                <th>Poem Approve status</th>
+                                                <th>Item Approve status</th>
                                                 <th>Action</th>
                                             </tr>
                                         </thead>
-                                        
                                         <tbody>
 
                                             <?php foreach ($poemList as $key => $value): ?>
                                                 <tr>
-                                                    <td>{{@$value['ititle']}}</td>
+                                                     <td>{{$key+1}}</td>
+                                                    <td style="display:none;">  
+                                                            {{@$value['itemid']}}
+                                                        
+                                                    </td>
+                                                    <td> 
+                                                            {{@$value['ititle']}}
+                                                        
+                                                    </td>
                                                     <td>
-                                                         <h5 class="m-0 font-weight-normal">{{@$value['itemAddedByUser']['user_name']}}</h5>
+                                                         <h5 class="m-0 font-weight-normal">
+                                                            @if($value['is_admin']==0)
+                                                                {{@$value['itemAddedByUser']['user_name']}}
+                                                            @else
+                                                            Admin
+                                                            @endif    
+
+                                                         </h5>
                                                          <p class="mb-0 text-muted"><small>Member Since {{@$value['created_at']}}</small>
                                                          </p>
                                                     </td>
-                                                <td>{{@$value['iyear']}}</td>
+                                                    <td>{{@$value['iyear']}}</td>
                                                 
-                                                 <td>
-                                                <input data-id="{{$value['itemid']}}" class="toggle-class" type="checkbox" data-onstyle="success" data-offstyle="danger" data-toggle="toggle" data-on="Active" data-off="InActive" {{ $value['approved_by_admin']==2 ? 'checked' : '' }}>
-                                        </td> 
+                                                    <td>
+                                                        <input dat="{{$value['itemid']}}" dat-userid="{{$value['userid']}}" class="toggle-class toggleSattus" type="checkbox" data-onstyle="success" data-offstyle="danger" data-toggle="toggle" data-on="Active" data-off="InActive" {{ $value['approved_by_admin']==1 ? 'checked' : '' }}>
+                                                    </td> 
                                         
-                                         <td> <a href="{{url('/admin/poem/edit/'.@$value['itemid'])}}" class="btn btn-xs btn-success"><i class="mdi mdi-pencil"></i></a>
-                                                    <a val="{{base64_encode($value['itemid'])}}" href="javascript: void(0);"  class="btn btn-xs btn-danger del_btn"><i class="mdi mdi-trash-can"></i></a>
+                                                    <td> 
+                                                    <a href="{{url('/admin/poem/view/'.@$value['itemid'])}}" class="btn btn-xs btn-primary"><i class="mdi mdi-eye"></i></a>
+                                                    <a href="{{url('/admin/poem/edit/'.@$value['itemid'])}}" class="btn btn-xs btn-success"><i class="mdi mdi-pencil"></i></a>
+                                                    <a val="{{base64_encode($value['itemid'])}}" class="btn btn-xs btn-danger del_btn"><i class="mdi mdi-trash-can"></i></a>
                                                     </td>
                                               
-                                                      
                                                 </tr>
                                              <?php endforeach ?>
                                         </tbody>
-                                        <tfoot>
-                                            <tr>
-                                               <th>Poem Title</th>
-                                               <th>Poem Added by</th>
-                                               <th>Year</th>
-                                               <th>Poem Approve status</th>
-                                               <th>Action</th>
-                                            </tr>
-                                        </tfoot>
+                                       
                                     </table>
                                 </div>
                             </div>
@@ -87,24 +96,27 @@
 
 <script type="text/javascript">
     $(document).ready( function () {
-        $('#example').DataTable();
-    });
+        $('#example').DataTable({
+            order: [[0, 'desc']],
+        });
 </script>
     
 <script>
 
-    $(document).on('click','.toggle-class',function(){
-       
-        var status = $(this).prop('checked') == true ? 2 : 1; 
-        var itemid = $(this).data('id'); 
-         alert('here',itemid);      
+    $(document).on('change','.toggleSattus',function(){
+        var status = $(this).prop('checked') == true ? 1 : 0; 
+        var itemid = $(this).attr('dat');    
+        var userid = $(this).attr('dat-userid');    
+        console.log(status,itemid)   
         $.ajax({
             type: "GET",
             dataType: "json",
-            url: 'admin/poem/changeStatus',
-            data: {'status': status, 'itemid': itemid},
+            url: "{{ url('admin/poem/changeStatus') }}",
+            data: {'status': status, 'itemid': itemid, 'userid': userid},
             success: function(data){
               console.log(data.success)
+              toastr.success(data.success);
+
             }
         });
     });
@@ -118,10 +130,10 @@
         var ev        = $(this);
         if(confirmation == true){
             $.ajax({
-                 url: "{{ url('admin/poem/delete') }}" + '/' + userId,
+                url: "{{ url('admin/poem/delete') }}" + '/' + userId,
                 type: 'POST',
-               data : {"_token":"{{ csrf_token() }}"},  //pass the CSRF_TOKEN()
-             success: function (data) {
+                data : {"_token":"{{ csrf_token() }}"},  //pass the CSRF_TOKEN()
+                success: function (data) {
                     if (data.status == 'ok') {
                         $(ev).closest('tr').hide();
                         toastr.success('User deleted successfully');

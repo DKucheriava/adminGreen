@@ -18,22 +18,25 @@
                                     <td>
                                         <table style="margin: 10px auto; text-align: center; box-shadow: 0px 0px 3px 0px rgba(0, 0, 0, 0.1); background-color: #fff; border-radius: 4px;" width="100%" cellspacing="0" cellpadding="0">
                                             <tbody>
-                                                <tr>
+                                              <!--   <tr>
                                                     <td>
                                                         <h1 style="font-weight:normal;margin:20px 0 0;color:#664b13;">Email Verification</h1>
                                                     </td>
                                                 </tr>
-                                                <br>
+                                                <br> -->
                                                 <tr>
                                                     <td>
-                                                        <h4 style="text-align:center; margin-bottom:0;color: #525252;"> Hello, {{ ucfirst(@$name)}} </h4>
-
-                                                        <p style="padding: 9px 30px 20px; line-height:22px; font-size:14px; color: #505050; letter-spacing: 1px; margin: 0;text-align: left;">You are receiving this email because we received a email verification request for your account. <br> Kindly click on the below button for email verification process</p>          
-                                                        <br>
-                                                        <?php 
+                                                       <!--  <h4 style="margin-bottom:0;color: #525252;"> Dear {{ $name }} </h4> -->
+                                                      <?php 
                                                             $link = $set_password_url;
                                                         ?>
-                                                        <button class="btn btn-primary" style="text-align:center; margin-bottom:0;color: #525252;"><a target="_blank" href="{{$link}}" class="btn btn-primary">Reset Password</a></button>
+                                                        <p style="padding: 9px 30px 20px; line-height:22px; font-size:14px; color: #505050; letter-spacing: 1px; margin: 0;text-align: left;">Dear {{ $name }}, <br><br>
+                                                            Welcome to Green Pheasants!
+                                                            <br> Please click here to verify your email: <br> <a target="_blank" href="{{$link}}" class="btn btn-primary">Verify email</a><br><br>Kind regards,<br>The Green Pheasants team</p>          
+                                                        <br>
+
+                                                         <img src="{{ url('admin/images/appbird.png') }}" alt="" height="70" style="float: left !important;">
+                                                        <!-- <button class="btn btn-primary" style="text-align:center; margin-bottom:0;color: #525252;"><a target="_blank" href="{{$link}}" class="btn btn-primary">Verify Email</a></button> -->
                                                     </td>
                                                 </tr>
                                                 <tr>

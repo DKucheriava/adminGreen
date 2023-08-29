@@ -14,7 +14,7 @@ class SessionService{
         date_default_timezone_set($request->timezone?$request->timezone:'Asia/Calcutta');
         // dd('check here');
         $user = SessionTable::create([
-            'logged_in' =>($request->userid==0 ? 0 : 1),   
+            'logged_in' =>($request->userid==0 ? 0 : 1),
             'userid'	=>($request->userid==0 ? 0 : $request->userid),
             'timezone'  =>$request->timezone,
             'sstart'    =>carbon::now(),
@@ -29,7 +29,7 @@ class SessionService{
         // Create user
         $sessionData = SessionTable::where('sessionid',$request->sessionid)
                                     ->first();
-
+        dd('s', $sessionData);
         date_default_timezone_set($request->timezone);
 
         $endDate   =  carbon::now();
@@ -40,7 +40,7 @@ class SessionService{
 
         $user = SessionTable::where('sessionid',$request->sessionid)
                     ->update([
-                        // 'logged_in' =>($request->userid==0 ? 0 : 1),   
+                        // 'logged_in' =>($request->userid==0 ? 0 : 1),
                         // 'userid'    =>($request->userid==0 ? 0 : $request->userid),
                         // 'timezone'  =>$request->timezone,
                         'sstart'    =>$startDate->format('m/d/Y h:i:s'),

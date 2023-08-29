@@ -15,10 +15,10 @@
                                         <li class="breadcrumb-item">
                                            <a href="{{url('admin/dashboard')}}">Dashboard</a>
                                         </li>
-                                        <li class="breadcrumb-item active">Edit Privacy Policy Page</li>
+                                        <li class="breadcrumb-item active">Edit Privacy Policy</li>
                                     </ol>
                                 </div>
-                                <h4 class="page-title">Edit Privacy Policy Page</h4>
+                                <h4 class="page-title">Edit Privacy Policy</h4>
                             </div>
                         </div>
                     </div>
@@ -32,16 +32,16 @@
                                         @csrf                                        
                                         <div class="col-lg-12">
                                             <div class="form-group">
-                                                <label>Title(English)</label>
+                                                <label>Title</label>
                                                 <input class="form-control" id="title" name="title" type="text"  value="{{@$privacyPolicy->title}}">    
                                             </div>
                                         </div>
                                         
                                         <div class="col-lg-12">
                                             <div class="form-group">
-                                               <label>Extra Description (English)</label>
+                                               
                                                  <div class="form-group">
-                                <label><strong>Description :</strong></label>
+                                <label><strong>Extra Description :</strong></label>
                                 <textarea required id="showExtraPrivacyData"  class="ckeditor form-control" name="showExtraPrivacyData">{{@$privacyPolicy->showExtraPrivacyData}}</textarea>
                                                 </div>
                                             </div>
@@ -50,7 +50,7 @@
                                         
                                          <div class="col-lg-12">
                                             <div class="form-group">
-                                               <label class="">Description (English)</label>
+                                              
                                                  <div class="form-group">
                                 <label><strong>Description :</strong></label>
                                 <textarea required id="description"  class="ckeditor form-control" name="description">{{@$privacyPolicy->description}}</textarea>

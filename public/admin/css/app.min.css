@@ -97,7 +97,9 @@ width: 52px;
     margin-top: 15px;
     border-radius: 3px;
     cursor: pointer;
-   background: linear-gradient(to right, #47A145 0%, #47A145 51%, #71d1ef 100%);
+  /*   background: linear-gradient(to right, #47A145 0%, #47A145 51%, #71d1ef 100%); */
+     background-color: #212529 !important;
+    border: #212529 !important;
 }h4.headsub:after {
     content: '';
     position: absolute;

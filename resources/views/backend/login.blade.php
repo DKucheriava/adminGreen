@@ -57,13 +57,13 @@
                                     @csrf
                                     <div class="form-group mb-3">
                                         <label for="emailaddress">Email address</label>
-                                        <input class="form-control" name="email" required="" type="email" value="" id="emailaddress"  placeholder="Enter your email">
+                                        <input class="form-control" name="email" required="" type="email" value="{{Session::get('greenadmin_email') ? Session::get('greenadmin_email') :''}}" id="emailaddress"  placeholder="Enter your email">
                                     </div>
 
                                     <div class="form-group mb-3">
                                         <label for="password">Password</label>
                                         <div class="input-group input-group-merge">
-                                            <input type="password" name="password" value="" required="" id="password" class="form-control" placeholder="Enter your password">
+                                            <input type="password" name="password" value="{{Session::get('greenadmin_password') ? Session::get('greenadmin_password') :''}}" required="" id="password" class="form-control" placeholder="Enter your password">
                                             <div class="input-group-append" data-password="false">
                                                 <div class="input-group-text">
                                                     <span class="password-eye"></span>
@@ -75,10 +75,10 @@
 
                                     <div class="form-group mb-3 d-flex">
                                         <div class="custom-control custom-checkbox">
-                                            <input type="checkbox" class="custom-control-input" id="checkbox-signin" value=""  checked  >
+                                            <input type="checkbox" class="custom-control-input" name="remember" id="checkbox-signin" value="{{Session::get('greenadmin_email') ? '1' :'0'}}" {{Session::get('greenadmin_email') ? 'checked' : ''}} >
                                             <label class="custom-control-label" for="checkbox-signin">Remember me</label>
                                         </div>
-										<a href ="{{url('/forgot-password')}}" class="ml-auto forgt-pswd">Forgot  password?</a>
+										<a href ="{{url('/forgot-password')}}" class="ml-auto forgt-pswd">Forgot password?</a>
                                     </div>
 
                                     <div class="form-group mb-0 text-center">
@@ -106,7 +106,7 @@
                     <div class="container-fluid">
                         <div class="row">
                             <div class="col-md-12  text-center" style="color: white !important">
-                               &copy; Copyright 2022 Green Pheasants Team. All Rights Reserved
+                               &copy; Copyright {{ date('Y')}} Green Pheasants Team. All Rights Reserved
                             </div>
                           
                         </div>
@@ -171,6 +171,25 @@
 
 <script type="text/javascript">
 $(document).ready(function(){
+
+   // alert($("input[type='checkbox']").val()); 
+    
+    $('#checkbox-signin').change(function() {
+        if($(this).is(':checked')){
+           $("input[type='checkbox']").val('1')
+        }
+        else{
+          $("input[type='checkbox']").val('0')  
+        }
+        // alert($("input[type='checkbox']").val()); 
+    });
+
+
+    // $("#checkbox-signin").on("change", function() {
+    //   alert($(this).is(':checked')); 
+    //   });
+
+
     $('#admin-login').validate({
         rules: {
             email: {

@@ -52,13 +52,12 @@
                                             <div class="col-lg-12">
                                                 <div class="form-group">
                                                     <label class="">Description</label>
-                                                    <textarea class="form-control "  id="description_id" name="description">{{@$faq->description}}</textarea>
-                                                    <!--<input class="form-control" id="description_hidden_id" name="description" type="hidden" value="{{@$faq->description}}">-->
-                                                    <!--<label class="error" for="description_hidden_id"></label>-->
+                                                    <textarea class="form-control" placeholder="Enter description"  id="description_id" name="description">{{@$faq->description}}</textarea>
+                                                  
                                                 </div>
                                             </div>
 											 <div class="col-12 mt-2">
-                                                    <button type="submit" class="btn btn-success waves-effect waves-light btn-primary-theme"><i class="fe-check-circle mr-1"></i> Submit</button>
+                                                    <button type="submit" id="btn-submit" class="btn btn-success waves-effect waves-light btn-primary-theme"><i class="fe-check-circle mr-1"></i> Submit</button>
                                                 </div>
                                             
                                         </div>
@@ -130,6 +129,13 @@
 
 
 <script type="text/javascript">
+
+      $(document).ready(function() {
+  
+        CKEDITOR.replace( 'description' );
+            
+         });
+      
     $('#add_faq').validate({
         ignore:[],
         rules:{
@@ -161,5 +167,10 @@
                 minlength:"Description must contain 20 characters",
             },
         },
+        submitHandler: function (form) {
+            console.log("Submitted!");
+            $("#btn-submit").attr("disabled", true);
+            form.submit();
+        }
     });
 </script>

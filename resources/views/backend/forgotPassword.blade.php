@@ -63,7 +63,7 @@
                                 </form>
                                 <br>
                                 <div class="custom-control text-center">
-                                    Already have an account	? &nbsp <a href ="{{url('/login')}}" class="ml-auto forgt-pswd">Sign in</a>
+                                   Back to <a href ="{{url('/login')}}" class="ml-auto forgt-pswd">Login</a>
                                 </div>
                             </div> <!-- end card-body -->
                         </div>

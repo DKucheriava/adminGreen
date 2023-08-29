@@ -33,26 +33,32 @@
                                 <table  id="basic-datatable1" class="table  table-hover table-nowrap table-centered m-0">
                                     <thead class="thead-light">
                                         <tr>
-                                            <th>S.no</th>
+                                            <th>Sr. No</th>
                                             <th>Title</th>
                                             <th>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php foreach ($faqs as $key => $value): ?>
-                                         <tr>
-                                            <td>
-                                                {{$key+1}}
-                                            </td>
-                                             <td>
-                                                 <h5 class="m-0 font-weight-normal">{{@$value['title']}}</h5>
-                                             </td>
-                                            <td> 
-                                                <a href="{{url('/admin/edit-faq/'.@$value['id'])}}" class="btn btn-xs btn-success"><i class="mdi mdi-pencil"></i></a>
-                                                <a val="{{base64_encode($value['id'])}}" href="javascript: void(0);"  class="btn btn-xs btn-danger del_btn"><i class="mdi mdi-trash-can"></i></a>
-                                            </td>
-                                         </tr>
-                                         <?php endforeach ?>
+                                        @forelse ($faqs as $key => $value)
+                                            <tr>
+                                                <td>
+                                                    {{$key+1}}
+                                                </td>
+                                                <td>
+                                                    <h5 class="m-0 font-weight-normal">{{@$value['title']}}</h5>
+                                                </td>
+                                                <td> 
+                                                   <a href="{{url('/admin/edit-faq/'.@$value['id'])}}" class="btn btn-xs btn-success"><i class="mdi mdi-pencil"></i></a>
+                                                    <a val="{{base64_encode($value['id'])}}" href="javascript: void(0);"  class="btn btn-xs btn-danger del_btn"><i class="mdi mdi-trash-can"></i></a>
+                                                </td>
+                                            </tr>
+                                        @empty
+                                            <tr class="text-center">
+                                                <td></td>
+                                                <td><p>No record found</p></td>
+                                                <td></td>
+                                            </tr>
+                                        @endforelse
                                     </tbody>
                                 </table>
                             </div>
@@ -82,6 +88,9 @@
                                 $(ev).closest('tr').hide();
                                 toastr.success('FAQ deleted successfully');
                             }   
+                            setTimeout(function () {
+                                location.reload();
+                            }, 2000);
                         }         
                     });
                 }else{

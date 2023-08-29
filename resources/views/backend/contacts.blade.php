@@ -31,6 +31,7 @@
                                     <table   id="example"  class="table  table-hover table-centered m-0 quries_contact_table">
                                         <thead class="thead-light">
                                             <tr>
+                                                <th>Sr. No</th>
                                                <th>Name</th>
                                                <th>Email</th>
                                                <th>Query</th>
@@ -40,6 +41,7 @@
 
                                             <?php foreach ($contactUs as $key => $value): ?>
                                                 <tr>
+                                                    <td>{{$key+1}}</td>
                                                     <td>{{@$value['name']}}</td>
                                                     <td>{{@$value['email']}}</td>
                                                     <td>{{@$value['message']}}</td>

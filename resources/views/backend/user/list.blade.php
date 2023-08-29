@@ -2,6 +2,7 @@
 @section('title', 'Manage'.' '.$label.'s')
 @section('content')
 
+
         <div class="content-page">
             <div class="content">
                 <div class="container-fluid">
@@ -32,28 +33,27 @@
                                  </div>
                                 </div>
                                 <div class="table-responsive">
-                                    <table   id="example"  class="table  table-hover table-nowrap table-centered m-0">
+                                    <table   id="example1"  class="table  table-hover table-nowrap table-centered m-0">
                                         <thead class="thead-light">
                                             <tr>
+                                                 <th>Sr. No</th>
                                                 <th>Name</th>
                                                 <th>Email</th>
-                                                <th>Action</th>
+                                                <th class="no-sort"> Action</th>
                                             </tr>
                                         </thead>
                                         <tbody>
 
                                             <?php foreach ($userList as $key => $value): ?>
                                              <tr>
+                                                 <td>{{$key+1}}</td>
                                                  <td>
-                                                     <h5 class="m-0 font-weight-normal">{{@$value['user_name']}}</h5>
-                                                     <p class="mb-0 text-muted"><small>Member Since {{@$value['created_at']}}</small>
-                                                     </p>
+                                                    <h5 class="m-0 font-weight-normal">{{@$value['user_name']}}</h5>
+                                                    <p class="mb-0 text-muted"><small>Member Since {{@$value['created_at']}}</small></p>
                                                  </td>
                                                  <td>{{@$value['uemail']}}</td>
-                                                 <!-- <td>+1 1234 567 890</td> -->
-
-                                                 <td> <a href="{{url('/admin/user/edit/'.@$value['id'])}}" class="btn btn-xs btn-success"><i class="mdi mdi-pencil"></i></a>
-                                                    <a val="{{base64_encode($value['id'])}}" href="javascript: void(0);"  class="btn btn-xs btn-danger del_btn"><i class="mdi mdi-trash-can"></i></a>
+                                                 <td> <a href="{{url('admin/user/view/'.$value['userid'])}}" class="btn btn-xs btn-primary"><i class="mdi mdi-eye"></i></a>
+                                                    <a val="{{base64_encode($value['userid'])}}" href="javascript: void(0);"  class="btn btn-xs btn-danger del_btn"><i class="mdi mdi-trash-can"></i></a>
                                                  </td>
                                              </tr>
                                              <?php endforeach ?>
@@ -71,8 +71,10 @@
 <div class="rightbar-overlay"></div>
 
 <script type="text/javascript">
-    $(document).ready( function () {
-        $('#example').DataTable();
+    $(document).ready( function () {        
+        $('#example1').dataTable( {
+            "bSort": false
+        });
     });
 </script>
 
@@ -83,10 +85,10 @@
         var ev        = $(this);
         if(confirmation == true){
             $.ajax({
-                 url: "{{ url('admin/user/delete') }}" + '/' + userId,
+                url: "{{ url('admin/user/delete') }}" + '/' + userId,
                 type: 'POST',
-               data : {"_token":"{{ csrf_token() }}"},  //pass the CSRF_TOKEN()
-             success: function (data) {
+                data : {"_token":"{{ csrf_token() }}"},  //pass the CSRF_TOKEN()
+                success: function (data) {
                     if (data.status == 'ok') {
                         $(ev).closest('tr').hide();
                         toastr.success('User deleted successfully');
@@ -97,4 +99,5 @@
             return false;
         }
     });
+
 </script>

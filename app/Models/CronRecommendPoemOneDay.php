@@ -9,5 +9,5 @@ class CronRecommendPoemOneDay extends Model
 {
     use HasFactory;
     protected $table = 'cron_recommend_poem_one_day';
-    protected $fillable = ['userid','email','type','status'];
+    protected $fillable = ['userid','email','mobile_token','type','status'];
 }

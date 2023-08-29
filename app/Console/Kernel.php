@@ -26,10 +26,10 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
+        // $schedule->command('cron:recommend:for:day')->everyMinute();   
         $schedule->command('cron:recommend:for:day')->daily();
         $schedule->command('cron:recommend:for:week')->weekly();         
         $schedule->command('cron:recommend:for:month')->monthly();   
-       
     }
 
     /**

@@ -8,6 +8,9 @@ use App\Models\Admin;
 use App\Models\Terms;
 use App\Models\PrivacyPolicy;
 use App\Traits\ImagesTrait;
+use App\Models\SupportPayment;
+
+
 
 class HomeController extends Controller
 {
@@ -42,7 +45,6 @@ class HomeController extends Controller
         return view('backend.terms', compact('terms_condition','label'));
     }
 
-    
     public function privacyPolicy(Request $request){
         if($request->isMethod('post')){
             $input  = $request->all();
@@ -59,11 +61,45 @@ class HomeController extends Controller
                 }
             }
         }   
+
         $label = 'Privacy & Policy';
         $privacyPolicy = PrivacyPolicy::orderby('created_at','desc')->first();
+
         return view('backend.privacyPolicy', compact('privacyPolicy','label'));
     }
 
+    function getPaymentTransactionList(Request $request){
+        $label = 'Payment Transaction';
 
+        $supportPaymentList = SupportPayment::with('userDetail')
+                        ->orderby('created_at','desc')
+                        ->get();
+
+        // dd($supportPaymentList);           
+
+        return view('backend.paymentTransaction.list',compact('supportPaymentList','label'));
+    }
+
+    function viewPaymentTransaction(Request $request,$id){
+        $label = 'View Payment Transaction';
+
+        $supportPaymentdetail = SupportPayment::with('userDetail')
+                                            ->where('id',$id)
+                                            ->orderBy('id','desc')
+                                            ->first();
+
+        return view('backend.paymentTransaction.view',compact('supportPaymentdetail','label'));
+    }
 
 }
+
+
+
+
+
+
+
+
+
+
+
