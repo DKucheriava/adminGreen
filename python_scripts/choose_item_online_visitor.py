@@ -8,7 +8,7 @@ from train_visitors import df_items_with_betas
 ##################################################
 
 def function_choose_item_online_visitor():
-    #Get df_items_with_betas from train_visitors script
+    # Get df_items_with_betas from train_visitors script
     # get the theme and mood from php
     theme = sys.argv[1]
     mood = sys.argv[2]

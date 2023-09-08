@@ -57,16 +57,19 @@ class ApiController extends Controller
         $this->toEmail = 'developerindiit@gmail.com';
     }
 
-    public function getRegistration(Request $request){
+    public function getRegistration(Request $request)
+    {
         dd('here');
     }
 
-    public function getAllCountry(Request $request){
+    public function getAllCountry(Request $request)
+    {
         $countries = Country::orderby('id','asc')->get();
         return response()->json(['status' => true,'message' => 'User login successful','data' => $countries,'code' => 200]);
     }
 
-    function userEmailVerification(Request $request,$userid){
+    function userEmailVerification(Request $request,$userid)
+    {
         $user = User::where('userid',$userid)
                     ->first();
         if($user->security_code!=null){
@@ -82,9 +85,10 @@ class ApiController extends Controller
         }
     }
 
-       function update_session(Request $request){
+    function update_session(Request $request)
+    {
         if(!empty($request->logged_in)){
-              $updateUser2 = SessionTable::create([
+            $updateUser2 = SessionTable::create([
                                         'logged_in'=>$request->logged_in,
                                         'userid'=>$request->userid,
                                         'sstart'=>$request->sstart,
@@ -93,66 +97,56 @@ class ApiController extends Controller
                                         'scountry'=>$request->country_code,
                                         'snumitems'=>$request->snumitems,
                                     ])->sessionid;
-              $lastActivity = SessionTable::latest()->first();
-               return response()->json(['status'=>true,'code'=>200,'sdata' => $lastActivity->sessionid,'message'=>'Session Create successfully']);
-        }
-        else{
-            return response()->json(['status'=>false,'message'=>'Link expired','code'=>400]);
-        }
-
-
-    }
-
-      function update_sessiononpause(Request $request){
-
-            $updateUser1 = SessionTable::where('sessionid',$request->id)
-                                ->update([
-                                        'send'=>$request->send,
-                                        'sduration'=>$request->sduration
-                                    ]);
-    if($updateUser1){
-           return response()->json(['status'=>true,'code'=>200,'message'=>'Session update successfully']);
+            $lastActivity = SessionTable::latest()->first();
+            return response()->json(['status'=>true,'code'=>200,'sdata' => $lastActivity->sessionid,'message'=>'Session Create successfully']);
         } else{
             return response()->json(['status'=>false,'message'=>'Link expired','code'=>400]);
         }
     }
 
-     function update_sessionapp(Request $request){
-
-            $updateUser1 = SessionTable::where('sessionid',$request->id)
-                                ->update([
-                                        'sapp'=>$request->sapp,
-                                    ]);
-    if($updateUser1){
-           return response()->json(['status'=>true,'code'=>200,'message'=>'Session update successfully']);
+    function update_sessiononpause(Request $request)
+    {
+        $updateUser1 = SessionTable::where('sessionid',$request->id)->update(['send' => $request->send, 'sduration' => $request->sduration]);
+        if ($updateUser1) {
+            return response()->json(['status' => true,'code'=>200,'message'=>'Session update successfully']);
         } else{
-            return response()->json(['status'=>false,'message'=>'Link expired','code'=>400]);
+            return response()->json(['status' => false,'message' => 'Link expired','code' => 400]);
         }
     }
 
-      function update_sessionoitems(Request $request){
-
-            $updateUser1 = SessionTable::where('sessionid',$request->id)
-                                ->update([
-                                        'snumitems'=>$request->snumitems,
-                                    ]);
-    if($updateUser1){
-           return response()->json(['status'=>true,'code'=>200,'message'=>'Session items update successfully']);
-        } else{
+     function update_sessionapp(Request $request)
+     {
+         $updateUser1 = SessionTable::where('sessionid',$request->id)
+                                ->update(['sapp' => $request->sapp]);
+         if($updateUser1){
+             return response()->json(['status'=>true,'code'=>200,'message'=>'Session update successfully']);
+         } else {
             return response()->json(['status'=>false,'message'=>'Link expired','code'=>400]);
-        }
-    }
+         }
+     }
 
-     function get_sessiononpause(Request $request){
+      function update_sessionoitems(Request $request)
+      {
+          $updateUser1 = SessionTable::where('sessionid',$request->id)
+                                ->update(['snumitems' => $request->snumitems]);
 
-            $ugetsession1 = SessionTable::where('sessionid',$request->id)
+          if ($updateUser1) {
+              return response()->json(['status'=>true,'code'=>200,'message'=>'Session items update successfully']);
+          } else {
+              return response()->json(['status'=>false,'message'=>'Link expired','code'=>400]);
+          }
+      }
+
+      function get_sessiononpause(Request $request)
+      {
+          $ugetsession1 = SessionTable::where('sessionid',$request->id)
                                 ->first();
-    if($ugetsession1){
-           return response()->json(['status'=>true,'code'=>200,'dataa'=>$ugetsession1,'message'=>'Session items update successfully']);
-        } else{
-            return response()->json(['status'=>false,'message'=>'Link expired','code'=>400]);
-        }
-    }
+          if($ugetsession1){
+              return response()->json(['status'=>true,'code'=>200,'dataa'=>$ugetsession1,'message'=>'Session items update successfully']);
+          } else{
+              return response()->json(['status'=>false,'message'=>'Link expired','code'=>400]);
+          }
+      }
 
       function updateviewdatainter(Request $request){
        $moodarr = [];
@@ -539,104 +533,106 @@ class ApiController extends Controller
 
 
 
-       public function userLogin(Request $request){
-        try {
-            $credentials = $request->only('uemail', 'password');
-            $input = $request->all();
+       public function userLogin(Request $request)
+       {
+            try {
+                $credentials = $request->only('uemail', 'password');
+                $input = $request->all();
+                $validator = Validator::make(
+                    $request->all(),
+                    [
+                        'uemail'      => 'required',
+                        'password'   => 'required'
+                    ]
+                );
+
+                if ($validator->fails()) {
+                    $response['code'] = 404;
+                    $response['status'] = $validator->errors()->first();
+                    $response['message'] = "missing parameters";
+                    return response()->json($response);
+                }
+
+                $checkDataEmail = User::where('uemail',$input['uemail'])
+                                    ->orWhere('user_name',$input['uemail'])
+                                    ->first();
+                if ($checkDataEmail){
+                    if ($checkDataEmail->email_verification_status == 1){
+                        if ((Hash::check($request->password, $checkDataEmail->password))){
+                            $token = JWTAuth::attempt(['uemail' => $checkDataEmail->uemail, 'password' => $request->password ]);
+
+                            User::where('uemail',$checkDataEmail->uemail)
+                                ->update([
+                                            'jwt_token'        =>$token,
+                                            'ulast_visit_time' =>date('Y-m-d H:i:s'),
+                                        ]);
+
+                            return response()->json(['status' => true,'message' => 'Welcome, '.$checkDataEmail->user_name,'data' => $checkDataEmail,'token' => $token,'code' => 200]);
+                        } else {
+                            return response()->json(['status' => false,'message' => 'Password did not match', 'code' => 400]);
+                        }
+                    } else {
+                        return response()->json(['status' => false,'message' => 'Email verification is pending', 'code' => 400]);
+                    }
+                } else {
+                    return response()->json(['status' => false,'message' => 'Email did not exist in database', 'code' => 400]);
+                }
+
+            } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
+                return response()->json(['error' => false,'message' => 'Something went wrong, Please try again later.', 'code' => 400]);
+            }
+       }
+
+       public function resetPassword(Request $request)
+       {
+           $input = $request->all();
+
             $validator = Validator::make(
                 $request->all(),
                 [
-                    'uemail'      => 'required',
-                    'password'   => 'required'
+                    'password' => 'required'
                 ]
             );
 
             if ($validator->fails()) {
-                $response['code'] = 404;
-                $response['status'] = $validator->errors()->first();
-                $response['message'] = "missing parameters";
-                return response()->json($response);
+                return response()->json(['error' => $validator->errors()], 200);
             }
 
-            $checkDataEmail = User::where('uemail',$input['uemail'])
-                                    ->orWhere('user_name',$input['uemail'])
-                                    ->first();
-            if($checkDataEmail){
-                if($checkDataEmail->email_verification_status == 1){
-                    if((Hash::check($request->password, $checkDataEmail->password))){
-                        $token = JWTAuth::attempt(['uemail' => $checkDataEmail->uemail, 'password' => $request->password ]);
+            $check_otp_exists = PasswordReset::where('token',$input['token'])->first();
+            // dd($check_otp_exists,$input);
+            if ($check_otp_exists) {
+                User::where('userid', $check_otp_exists['user_id'])
+                      ->update([
+                                'password' => Hash::make($input['password'])
+                        ]);
+                PasswordReset::where('user_id',$check_otp_exists['user_id'])->delete();
 
-                        User::where('uemail',$checkDataEmail->uemail)
-                            ->update([
-                                        'jwt_token'        =>$token,
-                                        'ulast_visit_time' =>date('Y-m-d H:i:s'),
-                                    ]);
+                return response()->json(['status' => true,'code'=>200,'message' => 'Password reset successfully']);
+            } else {
+                return response()->json(['status' => false, 'message' => 'Token does not match.','code' => 400]);
+            }
+       }
 
-                        return response()->json(['status' => true,'message' => 'Welcome, '.$checkDataEmail->user_name,'data' => $checkDataEmail,'token' => $token,'code' => 200]);
-                    }else{
-                        return response()->json(['status' => false,'message' => 'Password did not match', 'code' => 400]);
-                    }
-                }else{
-                    return response()->json(['status' => false,'message' => 'Email verification is pending', 'code' => 400]);
-                }
-            }else{
-                return response()->json(['status' => false,'message' => 'Email did not exist in database', 'code' => 400]);
+        public function contactUs(Request $request)
+        {
+            $validator = Validator::make(
+                $request->all(),
+                [
+                    'name'     => 'required',
+                    'message'  => 'required',
+                    'email'    => 'required|email'
+                ]
+            );
+
+            if ($validator->fails()) {
+                return response()->json(['error' => $validator->errors()], 200);
             }
 
-
-        }catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
-            return response()->json(['error' => false,'message' => 'Something went wrong, Please try again later.', 'code' => 400]);
-        }
-    }
-
-    public function resetPassword(Request $request)
-    {
-        $input = $request->all();
-
-        $validator = Validator::make(
-            $request->all(),
-            [
-                'password'      => 'required'
-            ]
-        );
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 200);
-        }
-
-        $check_otp_exists = PasswordReset::where('token',$input['token'])->first();
-        // dd($check_otp_exists,$input);
-        if ($check_otp_exists) {
-            User::where('userid', $check_otp_exists['user_id'])
-                  ->update([
-                            'password' => Hash::make($input['password'])
-                    ]);
-            PasswordReset::where('user_id',$check_otp_exists['user_id'])->delete();
-
-            return response()->json(['status' => true,'code'=>200,'message' => 'Password reset successfully']);
-        }else{
-            return response()->json(['status' => false, 'message' => 'Token does not match.','code' => 400]);
-        }
-    }
-
-    public function contactUs(Request $request){
-        $validator = Validator::make(
-            $request->all(),
-            [
-                'name'     => 'required',
-                'message'  => 'required',
-                'email'    => 'required|email'
-            ]
-        );
-
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 200);
-        }
-
-        ContactUs::create([
-            'name'      =>$request->name,
-            'email'     =>$request->email,
-            'message'   =>$request->message
-        ]);
+            ContactUs::create([
+                'name'      =>$request->name,
+                'email'     =>$request->email,
+                'message'   =>$request->message
+            ]);
 
             $project_name = 'Green Pheasants';
             $user_name  = $request->name;
@@ -644,66 +640,68 @@ class ApiController extends Controller
             $reason  = 'Query:- '.$request->message;
             $heading  = 'User detail and query:-';
             $email = 'contact_form@greenpheasants.com';
-         Mail::send('backend.emails.reasonmail', ['name'=>$user_name,'user_email'=>$user_email,'email'=>$email,'reason'=>$reason,'heading' => $heading], function ($message) use ($email, $project_name) {
-                    $message->to($email, $project_name)->subject('Green Pheasants - Contact Us');
-                    $message->from($this->toEmail,"Green Pheasants");
-                });
 
-        return response()->json(['status' => true,'code'=>200,'message' => 'Message send successfully']);
+            Mail::send('backend.emails.reasonmail', ['name'=>$user_name,'user_email'=>$user_email,'email'=>$email,'reason'=>$reason,'heading' => $heading], function ($message) use ($email, $project_name) {
+                $message->to($email, $project_name)->subject('Green Pheasants - Contact Us');
+                $message->from($this->toEmail,"Green Pheasants");
+            });
 
-    }
-
-
-    public function forgotPassword(Request $request){
-        $validator = Validator::make(
-            $request->all(),
-            [
-                'uemail'      => 'required|email',
-            ]
-        );
-
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 200);
+            return response()->json(['status' => true,'code'=>200,'message' => 'Message send successfully']);
         }
 
-        $email_verification_token = Str::random(64);
+        public function forgotPassword(Request $request)
+        {
+            $validator = Validator::make(
+                $request->all(),
+                [
+                    'uemail'      => 'required|email',
+                ]
+            );
 
-
-        $check_email_exists = User::where('uemail',$request['uemail'])->first();
-
-        if (empty($check_email_exists)) {
-            return response()->json(['status' => false,'message' => 'Email not exists.','code' => 400]);
-        }
-
-        PasswordReset::create([
-            'user_id'  =>$check_email_exists['userid'],
-            'email'    =>$request['uemail'],
-            'token'    =>$email_verification_token
-        ]);
-
-        $project_name   = env('App_name');
-        $email          = $request['uemail'];
-
-        $mailData['link'] ='http://3.238.14.13/#/reset-password'.'/'.$email_verification_token;
-
-        $replace_with     = ['user_name'=>$check_email_exists['user_name'],'uemail'=>$check_email_exists['uemail'],'email_verification_link'=>$mailData['link']];
-        try {
-            if (!filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
-                Mail::send('emails.forgotPasswordMail', ['data' => $replace_with], function ($message) use ($email, $project_name) {
-                    $message->to($email, $project_name)->subject('Reset Password - Green Pheasants');
-                });
+            if ($validator->fails()) {
+                return response()->json(['error' => $validator->errors()], 200);
             }
-        } catch (Exception $e) {
-            dd('here');
+
+            $email_verification_token = Str::random(64);
+
+            $check_email_exists = User::where('uemail',$request['uemail'])->first();
+
+            if (empty($check_email_exists)) {
+                return response()->json(['status' => false,'message' => 'Email not exists.','code' => 400]);
+            }
+
+            PasswordReset::create([
+                'user_id'  =>$check_email_exists['userid'],
+                'email'    =>$request['uemail'],
+                'token'    =>$email_verification_token
+            ]);
+
+            $project_name   = env('App_name');
+            $email          = $request['uemail'];
+
+            $mailData['link'] ='http://3.238.14.13/#/reset-password'.'/'.$email_verification_token;
+
+            $replace_with     = ['user_name'=>$check_email_exists['user_name'],'uemail'=>$check_email_exists['uemail'],'email_verification_link'=>$mailData['link']];
+
+            try {
+                if (!filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+                    Mail::send('emails.forgotPasswordMail', ['data' => $replace_with], function ($message) use ($email, $project_name) {
+                        $message->to($email, $project_name)->subject('Reset Password - Green Pheasants');
+                    });
+                }
+            } catch (Exception $e) {
+                dd('here');
+            }
+
+            return response()->json(['status' => true, 'message' => 'Reset password link has been sent on your registered email, Please check.','code' => 200], Response::HTTP_OK);
         }
-        return response()->json(['status' => true, 'message' => 'Reset password link has been sent on your registered email, Please check.','code' => 200], Response::HTTP_OK);
 
-    }
+        public function getFaqList(Request $request)
+        {
+            $getFaq = Faq::orderby('id','desc')->get();
 
-    public function getFaqList(Request $request){
-        $getFaq = Faq::orderby('id','desc')->get();
-        return response()->json(['status' => true,'message'=>'Get Faq list successfully','data' =>$getFaq,'code' => 200]);
-    }
+            return response()->json(['status' => true,'message'=>'Get Faq list successfully','data' =>$getFaq,'code' => 200]);
+        }
 
     public function getTermCondtion(Request $request){
         $getTermCondtion = Terms::orderby('id','desc')->first();
@@ -1014,74 +1012,61 @@ class ApiController extends Controller
         return response()->json(['status' => true,'data'=> $creators,'message'=>'Get Creator list  successfully','code' => 200]);
     }
 
-    function recommendPoem(Request $request){
-        $selected_term  =   $request->poemType;
-        $flag = $request->flag;
+     function recommendPoem(Request $request)
+     {
+         $selected_term = $request->poemType;
+         $flag = $request->flag;
 
-        if($request->userid && $request->userid!=0){
-            $getpoem = Item::with('poemFullDetail')
-                        ->where(function ($query) use($selected_term,$flag ) {
-                            switch ($flag) {
-                                case 1:
-                                    break;
-                                case 2:
-                                    return $query->where('itheme1',$selected_term)
-                                            ->orWhere('itheme2',$selected_term)
-                                            ->orWhere('itheme3',$selected_term)
-                                            ->orWhere('itheme4',$selected_term)
-                                            ->orWhere('itheme5',$selected_term);
-                                    break;
-                                default:
-                                    return $query->Where('imood1',$selected_term)
-                                            ->orWhere('imood2',$selected_term)
-                                            ->orWhere('imood3',$selected_term);
-                                    break;
-                            }
-                        })
-                        ->where('approved_by_admin',1)
-                        // ->where('userid','!=',$request->userid)
-                        ->inRandomOrder()
-                        ->first();
-        }else{
-            //Path to anaconda environment
-            $condaEnvironment = "/opt/homebrew/Caskroom/miniconda/base/envs/adminGreen";
+         $theme = 'all';
+         $mood = 'all';
 
-            //Get the mood ot theme
-            $theme = 'all';
-            $mood = 'all';
+         //Get the mood ot theme
+         switch ($flag) {
+             case 1:
+                 break;
+             case 2:
+                 $theme = $selected_term;
+                 break;
+             case 3:
+                 $mood = $selected_term;
+                 break;
+         }
 
-            switch ($flag) {
-                case 1:
-                    break;
-                case 2:
-                    $theme = $selected_term;
-                    break;
-                case 3:
-                    $mood = $selected_term;
-                    break;
-            }
+         if ($request -> userid && $request -> userid != 0) {
+             // Get result from python script
+             $getpoem = $this->runPythonScript($theme, $mood, 'user');
+         } else {
+             // Get result from python script
+             $getpoem = $this->runPythonScript($theme, $mood, 'visitor');
+         }
 
-            // Run the second script choose_item_online_visitor with 2 parameters: theme, mood
-            $choosingItemOnlineVisitorScrypt = "../python_scripts/choose_item_online_visitor.py $theme $mood";
+         if ($getpoem) {
+             return response()->json(['status' => true,'data' => $getpoem,'message' => 'Get recommend poem list  successfully','code' => 200]);
+         } else {
+             return response()->json(['status' => false,'message' => 'No record found','code' => 400]);
+         }
+     }
 
-            //Create a command with anaconda environment
-            $choosingItemOnlineVisitor = "$condaEnvironment/bin/python $choosingItemOnlineVisitorScrypt 2>&1";
+    public function runPythonScript($theme, $mood, $userType)
+    {
+        //Path to anaconda environment
+        $condaEnvironment = "/opt/homebrew/Caskroom/miniconda/base/envs/adminGreen";
 
-            //Get the result in json format and decode it
-            exec($choosingItemOnlineVisitor, $output);
+        // Run the second script with 2 parameters: theme, mood
+        $scriptRoute = "../python_scripts/choose_item_online_$userType.py $theme $mood";
 
-            $jsonResult = end($output);
-            $result = json_decode($jsonResult, true);
+        //Create a command with anaconda environment
+        $command = "$condaEnvironment/bin/python $scriptRoute 2>&1";
 
-            //Get the poemDetail from Item table by recommended_item
-            $getpoem = Item::with('poemFullDetail')->where('itemid', $result[0]['recommended_item'])->first();
-        }
+        //Get the result in json format and decode it
+        exec($command, $output);
 
-        if($getpoem){
-            return response()->json(['status' => true,'data'=>$getpoem,'message'=>'Get recommend poem list  successfully','code' => 200]);
-        }else{
-            return response()->json(['status' => false,'message'=>'No record found','code' => 400]);
-        }
+        $jsonResult = end($output);
+
+        $result = json_decode($jsonResult, true);
+
+        //Get the poemDetail from Item table by recommended_item
+        return Item::with('poemFullDetail')->where('itemid', $result[0]['recommended_item'])->first();
     }
 
     public function addPoem(Request $request){

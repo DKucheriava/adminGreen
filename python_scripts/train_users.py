@@ -1,6 +1,6 @@
 import pandas as pd
-from functions import function_remove_rows_with_missing_values, function_add_columns, function_attach_userids_to_items,
-function_removing_viewed_items, function_calculate_probabilities_users
+from functions import function_remove_rows_with_missing_values, function_add_columns, function_attach_userids_to_items, function_removing_viewed_items, function_calculate_probabilities_users
+from creating_data_from_db import df_users, df_items, df_interactions
 #####################################
 ##### Train the model for users #####
 #####################################
@@ -22,6 +22,7 @@ df_users_items = function_removing_viewed_items(df_interactions, df_users_items)
 """ Calculate the betas """
 # calculate the betas
 df_users_items_with_betas = function_calculate_probabilities_users(df_users, df_items, df_interactions)
+print('df_users_items_with_betas', df_users_items_with_betas)
 
 # Note
 """
