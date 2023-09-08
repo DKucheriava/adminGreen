@@ -3,30 +3,30 @@
 ###############################################################
 
 ### import packages
+import json
 import pandas as pd
 import numpy as np
 import random
 from numpy.random import choice
+from creating_data_from_db import df_items, df_users, df_interactions
 
-### Import the data
-"""
-Import three datasets from the database: "users", "items" and "interactions".
-Turn them into Pandas dataframes and name them: df_users, df_items and df_interactions
-In the Github repository there are three sample csv files that can be downloaded to your 
-local machine and imported into your IDE in order to test the code.
-"""
+pd.options.mode.chained_assignment = None  # default='warn'
+
+###############################################################
+##### Functions for Green Pheasants recommendation system #####
+###############################################################
 
 ########################################
 ### a random recommendation function ###
 ########################################
 
-def function_random(itemids): 
+def function_random(itemids):
     itemid = random.choice(itemids)
     return(itemid)
 
 """
 Defintions that are used throughout this script
-User - someone who has a user account. 
+User - someone who has a user account.
 Visitor - someone who does not have a user account, or has one but is not logged in.
 """
 
@@ -42,7 +42,7 @@ def function_remove_rows_with_missing_values(df_interactions):
 
     # Remove the rows with missing values in specified columns
     df_interactions = df_interactions.dropna(subset=cols_to_check)
-    
+
     return(df_interactions)
 
 ###################################################
@@ -55,7 +55,7 @@ to account for users' preference towards certain poets
 """
 
 def function_add_columns(df_interactions):
-    
+
     # tell pandas that I indeed want to modify the interactions DataFrame
     df_interactions = df_interactions.copy()
 
@@ -72,19 +72,19 @@ def function_add_columns(df_interactions):
 ###### Create and train the 'unique_residuals' recommendation function        #########
 #######################################################################################
 
-def function_unique_residuals_model(df_interactions): 
-    
+def function_unique_residuals_model(df_interactions):
+
     # calculate the mean of the collection column in the interactions df
     mu=np.nanmean(df_interactions['collection'])
-    
+
     # add the necessary columns
     df_interactions=function_add_columns(df_interactions)
-    
+
     ## adding user-specific intercepts
     # calculating the intercepts
     means_userid=df_interactions.groupby(['userid']).mean()
     means_userid['b_userid']=means_userid['collection']-mu
-    
+
     # adding the intercepts to the 'df_interactions' dataframe
     df_interactions = pd.merge(df_interactions,means_userid['b_userid'],on='userid', how='left')
 
@@ -109,7 +109,7 @@ def function_unique_residuals_model(df_interactions):
 
     # adding the intercepts to the 'df_interactions' dataframe
     df_interactions = pd.merge(df_interactions,means_creatorid['b_creatorid'],on='creatorid', how='left')
-    
+
     ## adding the interaction between the userid and the creator,
     ## to account for users' preference towards certain poets
 
@@ -134,18 +134,18 @@ This function then filters the interactions dataframe, so that it would include
 only items with the them or with the mood that the user chose.
 """
 def function_df_filter_theme_mood(df_interactions, theme='all', mood='all'):
-    
+
     # Create the dataframe that will be filtered
     df_filtered_theme_mood = df_interactions
 
     if theme != 'all':
             theme_cols = ['itheme1', 'itheme2', 'itheme3', 'itheme4', 'itheme5']
             df_filtered_theme_mood = df_filtered_theme_mood[df_filtered_theme_mood[theme_cols].isin([theme]).any(axis=1)]
-            
+
     if mood != 'all':
             mood_cols = ['imood1', 'imood2', 'imood3']
             df_filtered_theme_mood = df_filtered_theme_mood[df_filtered_theme_mood[mood_cols].isin([mood]).any(axis=1)]
-    
+
     return(df_filtered_theme_mood)
 
 ############################################################################################################################
@@ -153,17 +153,31 @@ def function_df_filter_theme_mood(df_interactions, theme='all', mood='all'):
 ############################################################################################################################
 
 def function_attach_userids_to_items(df_users, df_items):
+    """
+    Return the cartesian product of df_users and df_items.
 
-    ### Concatenating users_requesting_recommendation and df_items
-   # Validation
-   assert 'userid' in df_users.columns, "df_users must contain 'userid' column"
-   assert 'itemid' in df_items.columns, "df_items must contain 'itemid' column"
-   assert 'creatorid' in df_items.columns, "df_items must contain 'creatorid' column"
-    
-   # Create the Cartesian product of users and items
-   df_users_items = df_users[['userid']].merge(df_items[['itemid', 'creatorid']], how='cross')
+    Parameters:
+    - df_users (pd.DataFrame): DataFrame with user details.
+    - df_items (pd.DataFrame): DataFrame with item details.
 
-   return(df_users_items)
+    Returns:
+    - pd.DataFrame: DataFrame with every combination of users and items.
+    """
+
+    # Add a temporary key to both dataframes for the merge
+    df_users['key'] = 1
+    df_items['key'] = 1
+
+    # Merge the dataframes to get a cartesian product
+    df_users_items = df_users.merge(df_items, on='key')
+
+    # Rename the userid_x column to userid
+    df_users_items.rename(columns={'userid_x': 'userid'}, inplace=True)
+
+    # Drop the unnecessary columns (key and any other duplicate columns like userid_y if present)
+    df_users_items.drop(columns=['key', 'userid_y'] if 'userid_y' in df_users_items.columns else ['key'], inplace=True)
+
+    return df_users_items
 
 ##################################################################################
 ###### A function that removes items that the users have viewed in the past ######
@@ -194,11 +208,11 @@ def function_removing_viewed_items(df_interactions, df_users_items):
 ###### fitting and expanding                                                                              #######
 #################################################################################################################
 """
-# Technically, this function removes items from df_users_items that have the same userid_creatorid combination 
+# Technically, this function removes items from df_users_items that have the same userid_creatorid combination
 # as in df_interactions (after filtering)
 """
 def function_removing_items_to_expand_taste(df_interactions, df_users_items):
-    
+
     # Create a copy of the subset of df_interactions where 'collection' equals 1
     # The .copy() is used to ensure we do not modify the original df_interactions DataFrame
     df_interactions_added_to_collection = df_interactions.loc[df_interactions['collection']==1].copy()
@@ -223,12 +237,12 @@ def function_removing_items_to_expand_taste(df_interactions, df_users_items):
 ###################################################################################
 
 def function_calculate_probabilities_visitors(df_interactions, df_items):
-    
+
     # counting the number of times that each item participated in an interaction
     df_interactions['number_of_interactions'] = df_interactions.groupby('itemid')['itemid'].transform('count')
-    
-    # calculating the unique residuals 
-    df_interactions_unique_residuals=function_unique_residuals_model(df_interactions)  
+
+    # calculating the unique residuals
+    df_interactions_unique_residuals=function_unique_residuals_model(df_interactions)
 
     # calculating the mean
     mu=np.nanmean(df_interactions_unique_residuals['collection'])
@@ -260,10 +274,10 @@ def function_calculate_probabilities_visitors(df_interactions, df_items):
     # replacing missing values with the mean
     df_items_with_betas['prediction_by_residuals'] = df_items_with_betas['prediction_by_residuals'].replace(np.nan, mu)
 
-    ### assigning the probabilities of showing each item to the visitor 
-    # determing the weight of the mean (if only one person has viewed the item, the prediction of showing it will be 
+    ### assigning the probabilities of showing each item to the visitor
+    # determing the weight of the mean (if only one person has viewed the item, the prediction of showing it will be
     # 50% the mean and 50% the prediction be residual, because information from one person is not very reilable)
-    df_items_with_betas['weight_of_mean']=1/(df_items_with_betas['number_of_interactions']+1) 
+    df_items_with_betas['weight_of_mean']=1/(df_items_with_betas['number_of_interactions']+1)
     df_items_with_betas['prediction_weighted']=(mu*df_items_with_betas['weight_of_mean']+
                                     df_items_with_betas['prediction_by_residuals']*(1-df_items_with_betas['weight_of_mean']))
 
@@ -271,7 +285,7 @@ def function_calculate_probabilities_visitors(df_interactions, df_items):
     # so that the sum of all probabilities is 1
     #sum_of_weighted_probabilities=df_items_with_betas['prediction_weighted'].sum()
     #df_items_with_betas['final_prediction']=df_items_with_betas['prediction_weighted']/sum_of_weighted_probabilities
-    
+
     return(df_items_with_betas)
 
 ##########################################################
@@ -279,12 +293,12 @@ def function_calculate_probabilities_visitors(df_interactions, df_items):
 ##########################################################
 
 def function_calculate_probabilities_users(df_users, df_items, df_interactions):
-    
+
     # counting the number of times that each item participated in an interaction
     df_interactions['number_of_interactions'] = df_interactions.groupby('itemid')['itemid'].transform('count')
-    
-    # calculating the unique residuals 
-    df_interactions_unique_residuals=function_unique_residuals_model(df_interactions)  
+
+    # calculating the unique residuals
+    df_interactions_unique_residuals=function_unique_residuals_model(df_interactions)
 
     # calculating the mean
     mu=np.nanmean(df_interactions_unique_residuals['collection'])
@@ -292,7 +306,7 @@ def function_calculate_probabilities_users(df_users, df_items, df_interactions):
     # calculating the betas
     df_interactions_grouped_by_userid_means = df_interactions_unique_residuals.groupby(['userid']).mean() # grouping by userid and calculating the mean
     df_interactions_grouped_by_userid_means = df_interactions_grouped_by_userid_means.reset_index(level=0) # resetting the index
-    
+
     df_interactions_grouped_by_itemid_means = df_interactions_unique_residuals.groupby(['itemid']).mean() # grouping by itemid and calculating the mean
     df_interactions_grouped_by_itemid_means = df_interactions_grouped_by_itemid_means.reset_index(level=0) # resetting the index
 
@@ -301,7 +315,7 @@ def function_calculate_probabilities_users(df_users, df_items, df_interactions):
 
     df_interactions_grouped_by_userid_creatorid_means = df_interactions_unique_residuals.groupby(['userid_creatorid']).mean() # grouping by userid_creatorid and calculating the mean
     df_interactions_grouped_by_userid_creatorid_means = df_interactions_grouped_by_userid_creatorid_means.reset_index(level=0) # resetting the index
-    
+
     # adding the userid to df_items
     df_users_items=function_attach_userids_to_items(df_users, df_items)
 
@@ -317,14 +331,14 @@ def function_calculate_probabilities_users(df_users, df_items, df_interactions):
     df_users_items_with_betas = pd.merge(df_users_items_with_betas,df_interactions_grouped_by_creatorid_means[['creatorid', 'b_creatorid']],on='creatorid', how='left') # adding creatorid betas
     df_users_items_with_betas['userid_creatorid'] = df_users_items_with_betas['userid_creatorid'].astype(str)
     df_users_items_with_betas = pd.merge(df_users_items_with_betas,df_interactions_grouped_by_userid_creatorid_means[['userid_creatorid', 'b_userid_creatorid']],on='userid_creatorid', how='left') # adding creatorid betas
- 
+
     # replacing missing values of betas with zero
     df_users_items_with_betas[['b_userid', 'b_userid_creatorid', 'b_itemid', 'b_creatorid']] = df_users_items_with_betas[['b_userid', 'b_userid_creatorid', 'b_itemid', 'b_creatorid']].replace(np.nan, 0)
 
     # replacing missing values of number of interactions with zero
     df_users_items_with_betas['number_of_interactions'] = df_users_items_with_betas['number_of_interactions'].replace(np.nan, 0)
 
-    # predicting 
+    # predicting
     df_users_items_with_betas['prediction_by_residuals']=(
         mu+
         df_users_items_with_betas['b_userid']+
@@ -335,10 +349,10 @@ def function_calculate_probabilities_users(df_users, df_items, df_interactions):
     # replacing missing values with the mean
     df_users_items_with_betas['prediction_by_residuals'] = df_users_items_with_betas['prediction_by_residuals'].replace(np.nan, mu)
 
-    ### assigning the probabilities of showing each item to the user 
-    # determing the weight of the mean (if only one person has viewed the item, the prediction of showing it will be 
+    ### assigning the probabilities of showing each item to the user
+    # determing the weight of the mean (if only one person has viewed the item, the prediction of showing it will be
     # 50% the mean and 50% the prediction be residual, because information from one person is not very reilable)
-    df_users_items_with_betas['weight_of_mean']=1/(df_users_items_with_betas['number_of_interactions']+1) 
+    df_users_items_with_betas['weight_of_mean']=1/(df_users_items_with_betas['number_of_interactions']+1)
     df_users_items_with_betas['prediction_weighted']=(mu*df_users_items_with_betas['weight_of_mean']+
                                     df_users_items_with_betas['prediction_by_residuals']*(1-df_users_items_with_betas['weight_of_mean']))
 
@@ -349,26 +363,26 @@ def function_calculate_probabilities_users(df_users, df_items, df_interactions):
 ########################################################################################
 
 def function_calculate_recommendation_probabilities_one_visitor(df_items_with_betas, theme='all', mood='all'):
-   
+
    # filtering the items list by the theme or mood that the visitor has chosen
    df_items_with_betas_filtered=function_df_filter_theme_mood(df_items_with_betas, theme, mood)
    if (len(df_items_with_betas_filtered)==0): df_items_with_betas_filtered=df_items_with_betas # if the visitor viewed all poems that fit their search - they start all over again
-   
+
    # replacing negative values or zeros with 0.0001
    boolean_location=df_items_with_betas_filtered['prediction_weighted']<=0
    df_items_with_betas_filtered=df_items_with_betas_filtered.copy()
    df_items_with_betas_filtered.loc[boolean_location, 'prediction_weighted'] = 0.0001
-   
+
    # calculating the sum of the probabilities
    sum_of_weighted_probabilities=df_items_with_betas_filtered['prediction_weighted'].sum()
-   
+
    # dividing each probability by the sum of weighted probabilities
    df_items_with_betas_filtered=df_items_with_betas_filtered.copy()
    df_items_with_betas_filtered['final_prediction']=df_items_with_betas_filtered['prediction_weighted']/sum_of_weighted_probabilities
-   
+
    # renaming the dataframe
    df_with_final_predictions=df_items_with_betas_filtered
-   
+
    return(df_with_final_predictions)
 
 ##############################################################################
@@ -384,12 +398,12 @@ def function_calculate_recommendation_probabilities_one_user(df_users_requesting
    # removing items that the user viewed in the past
    df_users_items_with_betas_one_user=df_users_items_with_betas_one_user.copy()
    df_users_items_with_betas_one_user=function_removing_viewed_items(df_interactions, df_users_items_with_betas_one_user)
-   
-   # switching to the visitor function in case its a new user
+
+   # switching to the visitor function in case it is a new user
    if len(df_users_items_with_betas_one_user)==0: # in this case the user is new
        df_items_with_betas = function_calculate_probabilities_visitors(df_interactions, df_items) # creating the betas
        df_with_final_predictions = function_calculate_recommendation_probabilities_one_visitor(df_items_with_betas, theme, mood) # calculating the final predictions
-   
+
    else:
 
        # filtering the items list by the theme or mood that the user has chosen
@@ -411,8 +425,8 @@ def function_calculate_recommendation_probabilities_one_user(df_users_requesting
 ###########################################################################################
 
 def function_choose_one_item_to_display(df_with_final_predictions):
-   
-  # randomly choosing a recommendation model 
+
+  # randomly choosing a recommendation model
   chosen_model=random.randint(1, 2)
   if (chosen_model==1):
       modelid = 1
@@ -422,8 +436,8 @@ def function_choose_one_item_to_display(df_with_final_predictions):
       modelid = 2
       model_name = "Unique_residuals"
       chosen_item = random.choices(df_with_final_predictions['itemid'].values.tolist(), weights=df_with_final_predictions['prediction_weighted'], k=1)
-      chosen_item=chosen_item[0] # converting to integer    
-   
+      chosen_item=chosen_item[0] # converting to integer
+
   # creating a dataframe with the output values
   results={'modelid': [modelid],
            'model_name': [model_name],
@@ -443,29 +457,95 @@ send recommended poems to these users.
 """
 
 def function_choose_items_to_display_for_multiple_users(df_users_items_with_betas, df_users_requesting_recommendation):
-    
-    # creating a dataframe for storing the recommendations 
+
+    # creating a dataframe for storing the recommendations
     df_recommendations=pd.DataFrame(columns=['userid','modelid','model_name','recommended_item'])
-    
-    ### filtering df_users_items_with_betas according to the user's taste    
-    # cacluating the number of days that passed since January first, 2020. This will be used for the 'alternate between fitting and expanding' option     
+
+    ### filtering df_users_items_with_betas according to the user's taste
+    # cacluating the number of days that passed since January first, 2020. This will be used for the 'alternate between fitting and expanding' option
     # today = date.today() #Today's date
     # past_date = datetime.date(2020, 1, 1) #Jan 1 1970
     # days_since_2020=(today - past_date).days
     # even_day = (days_since_2020 % 2) == 0
     for userid in df_users_requesting_recommendation['userid']:
-  
+
         # filtering df_users_items_with_betas so it will contain only one user
         df_users_items_with_betas_one_user = df_users_items_with_betas.loc[df_users_items_with_betas['userid']==userid]
-    
+
         ### generating the recommendation
         final_predictions_for_one_user=function_calculate_recommendation_probabilities_one_user(df_users_requesting_recommendation, df_users_items_with_betas_one_user, theme='all', mood='all')
-        df_recommendation_for_one_user=function_choose_one_item_to_display(final_predictions_for_one_user)  
-        
+        df_recommendation_for_one_user=function_choose_one_item_to_display(final_predictions_for_one_user)
+
         # adding the userid
         df_recommendation_for_one_user['userid']=userid
-        
+
         # adding the results to the recommendations dataframe
         df_recommendations=pd.concat([df_recommendations, df_recommendation_for_one_user])
-    
+
     return(df_recommendations)
+
+def check_item_theme_mood(theme, mood, df_results):
+    """
+    Display details of the recommended items based on given theme and mood.
+
+    The function merges `df_results` with `df_items` based on the item ID,
+    and for each recommended item, it displays:
+        - Item name
+        - Themes associated with the item
+        - Moods associated with the item
+        - Whether the chosen theme matches any of the item's themes
+        - Whether the chosen mood matches any of the item's moods
+
+    Parameters:
+        - theme (str): The chosen theme to check against the item's themes.
+                       Use 'all' if no specific theme is chosen.
+        - mood (str): The chosen mood to check against the item's moods.
+                      Use 'all' if no specific mood is chosen.
+
+    Note:
+        - The function assumes the existence of global dataframes `df_results` and `df_items`.
+        - 'NaN' values in themes or moods are excluded from the display.
+    """
+
+    # If both theme and mood are 'all', print the message and exit
+    if theme == 'all' and mood == 'all':
+        print("No specific theme or mood was chosen.")
+        return
+
+    # Merging the dataframes to get item details
+    item_details = pd.merge(df_results, df_items, left_on='recommended_item', right_on='itemid')
+
+    for _, item in item_details.iterrows():
+        # Display the item name (ititle)
+        print(f"\nItem Name: {item['ititle']}")
+
+        # Extract themes and moods while ensuring they are strings
+        themes = item[['itheme1', 'itheme2', 'itheme3', 'itheme4', 'itheme5']].astype(str)
+        # Exclude 'nan' from themes for display
+        print(f"Themes: {', '.join([th for th in themes if th != 'nan'])}")
+
+        moods = item[['imood1', 'imood2', 'imood3']].astype(str)
+        # Exclude 'nan' from moods for display
+        print(f"Moods: {', '.join([md for md in moods if md != 'nan'])}")
+
+        theme_matched = False
+        # Check if chosen theme is in the themes of the item
+        if theme != 'all':
+            for i, th in enumerate(themes, 1):
+                if th == theme:
+                    print(f"The recommended item has the chosen theme (itheme{i})")
+                    theme_matched = True
+                    break
+            if not theme_matched:
+                print(f"The recommended item does not have the chosen theme ({theme}).")
+
+        mood_matched = False
+        # Check if chosen mood is in the moods of the item
+        if mood != 'all':
+            for i, md in enumerate(moods, 1):
+                if md == mood:
+                    print(f"The recommended item has the chosen mood (imood{i})")
+                    mood_matched = True
+                    break
+            if not mood_matched:
+                print(f"The recommended item does not have the chosen mood ({mood}).")

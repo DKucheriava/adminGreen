@@ -44,6 +44,7 @@ use DateTime;
 use date;
 use DB;
 use Carbon\Carbon;
+
 class ApiController extends Controller
 {
     use ImagesTrait;
@@ -1042,28 +1043,38 @@ class ApiController extends Controller
                         ->inRandomOrder()
                         ->first();
         }else{
-            $getpoem = Item::with('poemFullDetail')
-                        ->where(function ($query) use($selected_term,$flag ) {
-                            switch ($flag) {
-                                case 1:
-                                    break;
-                                case 2:
-                                    return $query->where('itheme1',$selected_term)
-                                            ->orWhere('itheme2',$selected_term)
-                                            ->orWhere('itheme3',$selected_term)
-                                            ->orWhere('itheme4',$selected_term)
-                                            ->orWhere('itheme5',$selected_term);
-                                    break;
-                                default:
-                                    return $query->Where('imood1',$selected_term)
-                                            ->orWhere('imood2',$selected_term)
-                                            ->orWhere('imood3',$selected_term);
-                                    break;
-                            }
-                        })
-                        ->where('approved_by_admin',1)
-                        ->inRandomOrder()
-                        ->first();
+            //Path to anaconda environment
+            $condaEnvironment = "/opt/homebrew/Caskroom/miniconda/base/envs/adminGreen";
+
+            //Get the mood ot theme
+            $theme = 'all';
+            $mood = 'all';
+
+            switch ($flag) {
+                case 1:
+                    break;
+                case 2:
+                    $theme = $selected_term;
+                    break;
+                case 3:
+                    $mood = $selected_term;
+                    break;
+            }
+
+            // Run the second script choose_item_online_visitor with 2 parameters: theme, mood
+            $choosingItemOnlineVisitorScrypt = "../python_scripts/choose_item_online_visitor.py $theme $mood";
+
+            //Create a command with anaconda environment
+            $choosingItemOnlineVisitor = "$condaEnvironment/bin/python $choosingItemOnlineVisitorScrypt 2>&1";
+
+            //Get the result in json format and decode it
+            exec($choosingItemOnlineVisitor, $output);
+
+            $jsonResult = end($output);
+            $result = json_decode($jsonResult, true);
+
+            //Get the poemDetail from Item table by recommended_item
+            $getpoem = Item::with('poemFullDetail')->where('itemid', $result[0]['recommended_item'])->first();
         }
 
         if($getpoem){
