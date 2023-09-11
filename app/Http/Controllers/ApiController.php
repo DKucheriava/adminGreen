@@ -158,7 +158,7 @@ class ApiController extends Controller
                     $userData = User::where('userid',$request->user_id)->first();
                     $PoemData = Item::where('itemid',$request->id)->first();
                     // echo $PoemData;
-         $countries = Country::where('id',$userData['ucountry_id'])->first();
+         $countries = is_null($userData) ? null : Country::where('id',$userData['ucountry_id'])->first();
          $sdate = date('Y-m-d H:i:s', strtotime($request->last_view_start));
          if($PoemData['itheme1']){
            array_push($themearrr, $PoemData['itheme1']);
@@ -187,44 +187,42 @@ class ApiController extends Controller
          }
 
        $updateintr1 =  Interaction::create([
-            'userid'             =>$request->user_id,
-            'ucountry_id'        =>$userData['ucountry_id'],
-            'visitorid'       =>$request->user_id,
-            'vcountry'        =>$countries['iso'],
-            'itemid'             =>$request->id,
-            'creatorid'           =>$PoemData['creatorid'],
-            'iyear'              =>$PoemData['iyear'],
-            'itheme1'       =>$PoemData['itheme1'],
-                        'itheme2'       =>$PoemData['itheme2'],
-                        'itheme3'       =>$PoemData['itheme3'],
-                        'itheme4'       =>$PoemData['itheme4'],
-                        'itheme5'       =>$PoemData['itheme5'],
-                        'imood1'        =>$PoemData['imood1'],
-                        'imood2'        =>$PoemData['imood2'],
-                        'imood3'        =>$PoemData['imood3'],
-            'itheme_ids'  =>implode(",",$themearrr),
-            'imood_ids'   =>implode(",",$moodarr),
-            'inum_words'          =>$PoemData['inum_words'],
-            'inum_words_bin'      =>$PoemData['inum_words_bin'],
-            'inum_lines'          =>$PoemData['inum_lines'],
-            'inum_words_per_line'      =>$PoemData['inum_words_per_line'],
-            'inum_words_per_line_bin'  =>$PoemData['inum_words_per_line_bin'],
-            'rtheme'                    =>implode(",",$themearrr),
-            'rmood'                     =>implode(",",$moodarr),
-            'received_email'            =>$userData['urec_email'] == 0 ? 0 : 1,
-            'received_push'             =>$userData['urec_push'] == 0 ? 0 : 1,
-            'received_online'           =>($userData['urec_email'] == 1 || $userData['urec_push'] == 1) ? 0 : 1,
-            'view_num'=>$vnum1,
-         'last_view_start'=>$sdate,
-            // 'last_view_end'             =>$request->description,
-            // 'last_view_duration'        =>$request->description,
-            // 'collection'                =>$request->description,
-            // 'register'                  =>$request->description
-        ]);
+           'userid'                  => $request->user_id,
+           'ucountry_id'             => is_null($userData) ? null : $userData['ucountry_id'],
+           'visitorid'               => $request->user_id,
+           'vcountry'                => is_null($countries) ? null : $countries['iso'],
+           'itemid'                  => $request->id,
+           'creatorid'               => $PoemData['creatorid'],
+           'iyear'                   => $PoemData['iyear'],
+           'itheme1'                 => $PoemData['itheme1'],
+           'itheme2'                 => $PoemData['itheme2'],
+           'itheme3'                 => $PoemData['itheme3'],
+           'itheme4'                 => $PoemData['itheme4'],
+           'itheme5'                 => $PoemData['itheme5'],
+           'imood1'                  => $PoemData['imood1'],
+           'imood2'                  => $PoemData['imood2'],
+           'imood3'                  => $PoemData['imood3'],
+           'itheme_ids'              => implode(",",$themearrr),
+           'imood_ids'               => implode(",",$moodarr),
+           'inum_words'              => $PoemData['inum_words'],
+           'inum_words_bin'          => $PoemData['inum_words_bin'],
+           'inum_lines'              => $PoemData['inum_lines'],
+           'inum_words_per_line'     => $PoemData['inum_words_per_line'],
+           'inum_words_per_line_bin' => $PoemData['inum_words_per_line_bin'],
+           'rtheme'                  => implode(",",$themearrr),
+           'rmood'                   => implode(",",$moodarr),
+           'received_email'          => is_null($userData) ? null : $userData['urec_email'] == 0 ? 0 : 1,
+           'received_push'           => is_null($userData) ? null : $userData['urec_push'] == 0 ? 0 : 1,
+           'received_online'         => is_null($userData) ? null : ($userData['urec_email'] == 1 || $userData['urec_push'] == 1) ? 0 : 1,
+           'view_num'                => $vnum1,
+           'last_view_start'         => $sdate,
+           // 'last_view_end'        =>$request->description,
+           // 'last_view_duration'   =>$request->description,
+           // 'collection'           =>$request->description,
+           // 'register'             =>$request->description
+       ]);
 
-
-
-    if($updateintr1){
+    if ($updateintr1) {
         $lastActivity = Interaction::latest()->first();
            return response()->json(['status'=>true,'code'=>200,'dataa'=>$lastActivity->id,'message'=>'Interaction view update successfully']);
         } else{
@@ -238,7 +236,7 @@ class ApiController extends Controller
                                 ->first();
                   $edate = date('Y-m-d H:i:s', strtotime($request->last_view_end));
                   $newenddaqte =  Carbon::parse($edate);
-                  $stdate = Carbon::parse($ugetinter11['last_view_start']);
+                  $stdate = is_null($ugetinter11) ? null : Carbon::parse($ugetinter11['last_view_start']);
                    $differenceInSeconds = $newenddaqte->diffInSeconds($stdate);
 
                                  $updateintr1 = Interaction::where('id',$request->id)
